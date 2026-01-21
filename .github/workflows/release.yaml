@@ -1,0 +1,76 @@
+name: CI / Trigger PR
+
+env:
+  # this configures docker/metadata-action to use the true commit sha when tagging
+  DOCKER_METADATA_PR_HEAD_SHA: 'true' 
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+jobs:
+  pr:
+    permissions:
+      id-token: write # this is necessary to get a gh id token
+      contents: read
+      packages: write
+    name: Generate PR
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the repo
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      ################################################################
+      # Boilerplate to build a docker image, feel free to skip below #
+      ################################################################
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          # list of Docker images to use as base name for tags
+          images: ghcr.io/pluralsh/console
+          # generate Docker tags based on the following events/attributes
+          tags: |
+            type=sha
+            type=semver,pattern={{version}}
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      - name: Login to GHCR
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Test Build console image
+        uses: docker/build-push-action@v3
+        with:
+          context: "."
+          file: "./Dockerfile"
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          platforms: linux/amd64
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      ###############################################################
+      # Plural CLI Setup and trigger-pull-request action invocation #
+      ###############################################################
+      - name: setup plural
+        id: plural
+        uses: pluralsh/setup-plural@v2
+        with:
+          email: gh-actions@plural.sh
+          consoleUrl: https://basalt.cloud.plural.sh
+      - name: Trigger PR
+        uses: pluralsh/trigger-pipeline@v2
+        with:
+          url: https://basalt.cloud.plural.sh
+          token: ${{ steps.plural.outputs.consoleToken }}
+          pipeline: blk-dev-flow
+          context: |
+            {
+              "tag": "${{ github.ref_name }}"
+            }
