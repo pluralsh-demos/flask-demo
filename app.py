@@ -41,6 +41,7 @@ async def health():
         health_status["status"] = "unhealthy"
         health_status["database"] = "not_configured"
         health_status["error"] = "POSTGRES_URL environment variable not set"
+        print('health check failed', health_status)
         return JSONResponse(content=health_status, status_code=503)
     
     try:
@@ -54,11 +55,13 @@ async def health():
             else:
                 health_status["status"] = "unhealthy"
                 health_status["database"] = "query_failed"
+                print('health check failed', health_status)
                 return JSONResponse(content=health_status, status_code=503)
     except SQLAlchemyError as e:
         health_status["status"] = "unhealthy"
         health_status["database"] = "error"
         health_status["error"] = str(e)
+        print('health check failed', health_status)
         return JSONResponse(content=health_status, status_code=503)
     
     return JSONResponse(content=health_status, status_code=200)
