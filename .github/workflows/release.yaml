@@ -72,5 +72,6 @@ jobs:
           pipeline: blk-dev-flow
           context: |
             {
+              "flow": "blk-dev-flow",
               "tag": "${{ github.ref_name }}"
             }
