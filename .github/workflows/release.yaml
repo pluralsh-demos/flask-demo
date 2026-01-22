@@ -62,7 +62,7 @@ jobs:
         id: plural
         uses: pluralsh/setup-plural@v2
         with:
-          email: gh-actions@plural.sh
+          email: console@plural.sh
           consoleUrl: https://basalt.console.cloud.plural.sh
       - name: Trigger PR
         uses: pluralsh/trigger-pipeline@v2
