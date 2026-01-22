@@ -29,7 +29,7 @@ jobs:
         uses: docker/metadata-action@v4
         with:
           # list of Docker images to use as base name for tags
-          images: ghcr.io/pluralsh/console
+          images: ghcr.io/pluralsh-demos/flask-demo
           # generate Docker tags based on the following events/attributes
           tags: |
             type=sha
