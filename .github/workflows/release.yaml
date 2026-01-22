@@ -63,11 +63,11 @@ jobs:
         uses: pluralsh/setup-plural@v2
         with:
           email: gh-actions@plural.sh
-          consoleUrl: https://basalt.cloud.plural.sh
+          consoleUrl: https://basalt.console.cloud.plural.sh
       - name: Trigger PR
         uses: pluralsh/trigger-pipeline@v2
         with:
-          url: https://basalt.cloud.plural.sh
+          url: https://basalt.console.cloud.plural.sh
           token: ${{ steps.plural.outputs.consoleToken }}
           pipeline: blk-dev-flow
           context: |
